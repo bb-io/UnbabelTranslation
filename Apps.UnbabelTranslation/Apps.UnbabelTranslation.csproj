@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <Product>Unbabel Translation</Product>
         <Description>Platform for multilingual content translation</Description>
-        <Version>1.1.1</Version>
+        <Version>1.1.2</Version>
         <AssemblyName>Apps.UnbabelTranslation</AssemblyName>
     </PropertyGroup>
 
