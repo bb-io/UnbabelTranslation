@@ -78,4 +78,25 @@ public class TranslationActions : UnbabelTranslationInvocable
 
         return result!;
     }
+
+    private async Task<TranslationEntity> SubmitTranslation(SubmitTranslationRequest payload)
+    {
+        var endpoint = $"/v1/customers/{CustomerId}/translations:submit_async";
+        var request = new RestRequest(endpoint, Method.Post).WithJsonBody(payload, JsonConfig.Settings);
+
+        var submitTranslationResponse =
+            await TranslationClient.ExecuteWithErrorHandling<SubmitTranslationResponse>(request, Creds);
+
+        TranslationEntity? result = default;
+
+        while (result is null || result.Status == "in_progress")
+        {
+            result = await GetTranslation(new()
+            {
+                TranslationId = submitTranslationResponse.TranslationUid
+            });
+        }
+
+        return result!;
+    }
 }
