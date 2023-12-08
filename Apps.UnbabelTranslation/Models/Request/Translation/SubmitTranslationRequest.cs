@@ -1,16 +1,50 @@
-using Apps.UnbabelTranslation.DataSourceHandlers;
-using Blackbird.Applications.Sdk.Common;
-using Blackbird.Applications.Sdk.Common.Dynamic;
+using System.Net.Mime;
+using System.Text;
+using File = Blackbird.Applications.Sdk.Common.Files.File;
 
 namespace Apps.UnbabelTranslation.Models.Request.Translation;
 
 public class SubmitTranslationRequest
 {
-    [Display("Text format")] public string TextFormat { get; set; }
+    public string TextFormat { get; set; }
 
-    [Display("Source text")] public string SourceText { get; set; }
+    public string SourceText { get; set; }
 
-    [Display("Pipeline ID")]
-    [DataSource(typeof(PipelineDataHandler))]
     public string PipelineId { get; set; }
+
+    public SubmitTranslationRequest(SubmitTextTranslationInput input)
+    {
+        SourceText = input.SourceText;
+        PipelineId = input.PipelineId;
+        TextFormat = "txt";
+    }
+
+    public SubmitTranslationRequest(SubmitFileTranslationInput input)
+    {
+        PipelineId = input.PipelineId;
+        TextFormat = GetFileTextFormat(input.File);
+        SourceText = Encoding.UTF8.GetString(input.File.Bytes);
+    }
+
+    private string GetFileTextFormat(File inputFile)
+    {
+        var textFormat = inputFile.ContentType switch
+        {
+            MediaTypeNames.Text.Html => "html",
+            MediaTypeNames.Text.Plain => "txt",
+            MediaTypeNames.Application.Xml => "xliff",
+            "application/xliff+xml" => "xliff",
+            _ => null
+        };
+
+        textFormat ??= Path.GetExtension(inputFile.Name)?.ToLower() switch
+        {
+            ".html" => "html",
+            ".txt" => "txt",
+            ".xliff" => "xliff",
+            _ => throw new("Wrong file format, Unbabel accepts only HTML, TXT or XLIFF files")
+        };
+
+        return textFormat;
+    }
 }

@@ -30,13 +30,12 @@ public class TranslationActions : UnbabelTranslationInvocable
     }
 
     [Action("Submit translation", Description = "Submits text for translation")]
-    public Task<SubmitTranslationResponse> SubmitTranslation([ActionParameter] SubmitTranslationRequest input)
-    {
-        var endpoint = $"/v1/customers/{CustomerId}/translations:submit_async";
-        var request = new RestRequest(endpoint, Method.Post).WithJsonBody(input, JsonConfig.Settings);
+    public Task<TranslationEntity> SubmitTextTranslation([ActionParameter] SubmitTextTranslationInput input)
+        => SubmitTranslation(new(input));
 
-        return TranslationClient.ExecuteWithErrorHandling<SubmitTranslationResponse>(request, Creds);
-    }
+    [Action("Submit file translation", Description = "Submits file for translation")]
+    public Task<TranslationEntity> SubmitFileTranslation([ActionParameter] SubmitFileTranslationInput input)
+        => SubmitTranslation(new(input));
 
     [Action("Search translations", Description = "Searches for previously created translations")]
     public async Task<SearchTranslationsResponse> SearchTranslations([ActionParameter] SearchTranslationsRequest input)
@@ -56,5 +55,26 @@ public class TranslationActions : UnbabelTranslationInvocable
         var request = new RestRequest(endpoint, Method.Post);
 
         return TranslationClient.ExecuteWithErrorHandling(request, Creds);
+    }
+
+    private async Task<TranslationEntity> SubmitTranslation(SubmitTranslationRequest payload)
+    {
+        var endpoint = $"/v1/customers/{CustomerId}/translations:submit_async";
+        var request = new RestRequest(endpoint, Method.Post).WithJsonBody(payload, JsonConfig.Settings);
+
+        var submitTranslationResponse =
+            await TranslationClient.ExecuteWithErrorHandling<SubmitTranslationResponse>(request, Creds);
+
+        TranslationEntity? result = default;
+
+        while (result is null || result.Status == "in_progress")
+        {
+            result = await GetTranslation(new()
+            {
+                TranslationId = submitTranslationResponse.TranslationUid
+            });
+        }
+
+        return result!;
     }
 }
