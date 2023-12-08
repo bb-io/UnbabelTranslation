@@ -1,5 +1,6 @@
 ﻿using Apps.UnbabelTranslation.Api;
 using Apps.UnbabelTranslation.Constants;
+using Apps.UnbabelTranslation.Enums;
 using Apps.UnbabelTranslation.Models.Entities;
 using Apps.UnbabelTranslation.Models.Response;
 using Blackbird.Applications.Sdk.Common.Authentication;
@@ -18,14 +19,11 @@ public class ConnectionValidator : IConnectionValidator
     {
         var creds = authenticationCredentialsProviders.ToArray();
         var customerId = creds.Get(CredsNames.CustomerId).Value;
-        var client = new UnbabelTranslationClient();
+        var client = new UnbabelTranslationClient(ApiType.Pipelines);
 
-        var endpoint = $"/v1/customers/{customerId}/translations:search";
-        var request = new RestRequest(endpoint, Method.Post)
-            .WithJsonBody(new
-            {
-                source_language = "en"
-            });
+
+        var endpoint = $"/v0/customers/{customerId}/pipelines";
+        var request = new RestRequest(endpoint);
 
         try
         {

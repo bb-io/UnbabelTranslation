@@ -6,9 +6,9 @@ namespace Apps.UnbabelTranslation.Models.Request.Translation;
 
 public class SubmitTextTranslationInput
 {
-    [Display("Source text")] public string SourceText { get; set; }
+    [Display("Text")] public string SourceText { get; set; }
 
-    [Display("Pipeline ID")]
+    [Display("Pipeline")]
     [DataSource(typeof(PipelineDataHandler))]
     public string PipelineId { get; set; }
 }
