@@ -68,11 +68,12 @@ public class TranslationActions : UnbabelTranslationInvocable
         TranslationEntity? result = default;
 
         while (result is null || result.Status == "in_progress")
-        {
+        {            
             result = await GetTranslation(new()
             {
                 TranslationId = submitTranslationResponse.TranslationUid
             });
+            await Task.Delay(3000);
         }
 
         return result!;
