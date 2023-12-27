@@ -7,6 +7,7 @@ using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Utils.Extensions.Http;
+using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
@@ -16,8 +17,10 @@ namespace Apps.UnbabelTranslation.Actions;
 [ActionList]
 public class TranslationActions : UnbabelTranslationInvocable
 {
-    public TranslationActions(InvocationContext invocationContext) : base(invocationContext)
+    private readonly IFileManagementClient _fileManagementClient;
+    public TranslationActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : base(invocationContext)
     {
+        _fileManagementClient = fileManagementClient;
     }
 
     //[Action("Get translation", Description = "Get details of a specific translation")]
@@ -35,7 +38,7 @@ public class TranslationActions : UnbabelTranslationInvocable
 
     [Action("Translate file", Description = "Translates a file using a specified pipeline, only txt, html and xliff supported.")]
     public Task<TranslationEntity> SubmitFileTranslation([ActionParameter] SubmitFileTranslationInput input)
-        => SubmitTranslation(new(input));
+        => SubmitTranslation(new(input, _fileManagementClient));
 
     //[Action("Search translations", Description = "Searches for previously created translations")]
     //public async Task<SearchTranslationsResponse> SearchTranslations([ActionParameter] SearchTranslationsRequest input)
