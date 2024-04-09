@@ -1,6 +1,8 @@
+using Blackbird.Applications.Sdk.Common.Files;
+using Blackbird.Applications.Sdk.Utils.Extensions.Files;
+using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using System.Net.Mime;
 using System.Text;
-using File = Blackbird.Applications.Sdk.Common.Files.File;
 
 namespace Apps.UnbabelTranslation.Models.Request.Translation;
 
@@ -19,14 +21,16 @@ public class SubmitTranslationRequest
         TextFormat = "txt";
     }
 
-    public SubmitTranslationRequest(SubmitFileTranslationInput input)
+    public SubmitTranslationRequest(SubmitFileTranslationInput input, IFileManagementClient _fileManagementClient)
     {
         PipelineId = input.PipelineId;
         TextFormat = GetFileTextFormat(input.File);
-        SourceText = Encoding.UTF8.GetString(input.File.Bytes);
+
+        var fileBytes = _fileManagementClient.DownloadAsync(input.File).Result.GetByteData().Result;
+        SourceText = Encoding.UTF8.GetString(fileBytes);
     }
 
-    private string GetFileTextFormat(File inputFile)
+    private string GetFileTextFormat(FileReference inputFile)
     {
         var textFormat = inputFile.ContentType switch
         {
